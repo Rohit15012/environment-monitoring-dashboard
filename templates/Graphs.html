@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Live Charts</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<a href="/" class="btn">⬅ Back to Dashboard</a>
+<h1>📊 Live Pollution Trends</h1>
+<h2>Real-Time Pollution Monitoring</h2>
+<p>Live sensor data visualization</p>
+
+<div id="pm25Chart" class="chart"></div>
+<div id="co2Chart" class="chart"></div>
+<div id="phChart" class="chart"></div>
+
+<script>
+const history = { time: [], PM2_5: [], CO2: [], pH: [] };
+
+async function fetchData() {
+    const res = await fetch("/live_data");
+    const data = await res.json();
+
+    history.time.push(data.timestamp);
+    history.PM2_5.push(data.PM2_5);
+    history.CO2.push(data.CO2);
+    history.pH.push(data.pH);
+
+    if (history.time.length > 20) {
+        for (let key in history) history[key].shift();
+    }
+
+    updateCharts();
+}
+
+function updateCharts() {
+
+  Plotly.newPlot('pm25Chart', [{
+    x: history.time,
+    y: history.PM2_5,
+    type: 'scatter',
+    mode: 'lines+markers',
+    line: {shape: 'spline'}
+}], {
+title: 'PM2.5 Air Pollution (µg/m³) ℹ️',
+annotations: [{
+    text: "Fine particles in air that can affect breathing and health.",
+    showarrow: false,
+    xref: "paper",
+    yref: "paper",
+    x: 0.5,
+    y: 1.18,
+    xanchor: "center",
+    font: {size: 12}
+}]
+});
+
+Plotly.newPlot('co2Chart', [{
+    x: history.time,
+    y: history.CO2,
+    type: 'bar'
+}], {
+title: 'CO2 Level (ppm) ℹ️',
+annotations: [{
+    text: "This is find CO2 (parts per million ) Nromal level of CO2 400-800 .",
+    showarrow: false,
+    xref: "paper",
+    yref: "paper",
+    x: 0.5,
+    y: 1.18,
+    xanchor: "center",
+    font: {size: 12}
+}]
+});
+
+Plotly.newPlot('phChart', [{
+    x: history.time,
+    y: history.pH,
+    type: 'scatter',
+    fill: 'tozeroy'
+}], {
+title: 'Water pH Level ℹ️',
+annotations: [{
+    text: "This is find wather pH Level. Safe water is usually pH 6.5–8.5.",
+    showarrow: false,
+    xref: "paper",
+    yref: "paper",
+    x: 0.5,
+    y: 1.18,
+    xanchor: "center",
+    font: {size: 12}
+}]
+});
+
+}
+
+setInterval(fetchData, 5000);
+fetchData();
+</script>
+
+</body>
+</html>

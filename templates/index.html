@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Environment Tracker</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="/static/style.css">
+
+    <!-- Plotly charts -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<div class="navbar">
+    <a href="/" class="logo">🌍 EnvTracker</a>
+
+    <div class="menu">
+        <a href="/">Dashboard</a>
+        <a href="/graphs">Charts</a>
+        <a href="#status-info">Status Info</a>
+    </div>
+</div>
+
+<h1>⛏️ Environmental Tracker</h1>
+<p>Live environment data with real-time charts & weather</p>
+
+<!-- Search -->
+<form action="/" method="GET" class="search-box">
+    <input type="text" name="city" placeholder="Enter city name">
+    <button type="submit">Search</button>
+</form>
+
+<!-- Weather -->
+<div class="weather-box">
+
+<h2>🌤 Live Weather</h2>
+
+<div class="city">📍 {{ city }}</div>
+
+<div id="weather" class="weather-data">
+🌡 {{ temp }}°C |
+💧 {{ humidity }}% |
+🌬 {{ condition }}
+</div>
+
+</div>
+
+<!-- Data Table -->
+<table id="data-table">
+<tr>
+<th>Timestamp</th>
+<th>PM2.5</th>
+<th>CO2</th>
+<th>pH</th>
+<th>Turbidity</th>
+<th>Lead</th>
+<th>Status</th>
+</tr>
+</table>
+
+<a href="/download_report" class="btn">⬇️ Download January Report</a>
+
+<script>
+async function fetchData() {
+
+const res = await fetch("/live_data");
+const data = await res.json();
+
+const table = document.getElementById("data-table");
+
+table.innerHTML = `
+<tr>
+<th>Timestamp</th>
+<th>PM2.5</th>
+<th>CO2</th>
+<th>pH</th>
+<th>Turbidity</th>
+<th>Lead</th>
+<th>Status</th>
+</tr>
+
+<tr>
+<td>${data.timestamp}</td>
+<td>${data.PM2_5}</td>
+<td>${data.CO2}</td>
+<td>${data.pH}</td>
+<td>${data.Turbidity}</td>
+<td>${data.Lead_Level}</td>
+<td class="${data.status.toLowerCase()}">${data.status}</td>
+</tr>
+`;
+
+}
+
+setInterval(fetchData,5000)
+fetchData()
+
+async function fetchWeather() {
+
+const res = await fetch("/weather");
+const w = await res.json();
+
+document.getElementById("weather").innerHTML =
+`🌡 ${w.temp}°C | 💧 ${w.humidity}% | 🌬 ${w.condition}`;
+}
+
+setInterval(fetchWeather,15000)
+fetchWeather()
+
+</script>
+
+<!-- Status Information Section --> 
+<div id="status-info" class="status-info">
+<h2>Environment Status Guide</h2>
+  <div class="status-box safe-box">
+ <h3>🟢 Safe</h3> <p><b>Meaning:</b> Environment is normal and healthy.</p>
+  <p>Pollution levels are low and safe for people, animals, and nature.</p>
+ </div> <div class="status-box warning-box">
+ <h3>🟡 Warning</h3> <p><b>Meaning:</b> Pollution is increasing.</p>
+ <p>Air or water quality is getting worse and needs attention.</p> 
+ </div> <div class="status-box danger-box">
+ <h3>🔴 Danger</h3> <p><b>Meaning:</b> Pollution is very high.</p>
+  <p>The environment is unsafe and may harm human health.</p> </div>
+
+</body>
+</html>
